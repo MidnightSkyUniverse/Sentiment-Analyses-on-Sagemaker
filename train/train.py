@@ -14,7 +14,7 @@ from model import LSTMClassifier
 def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
     print("Loading model.")
-
+    
     # First, load the parameters used to create the model.
     model_info = {}
     model_info_path = os.path.join(model_dir, 'model_info.pth')
@@ -145,7 +145,8 @@ if __name__ == '__main__':
     loss_fn = torch.nn.BCELoss()
 
     train(model, train_loader, args.epochs, optimizer, loss_fn, device)
-
+    
+    
     # Save the parameters used to construct the model
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
@@ -155,6 +156,7 @@ if __name__ == '__main__':
             'vocab_size': args.vocab_size,
         }
         torch.save(model_info, f)
+   
 
 	# Save the word_dict
     word_dict_path = os.path.join(args.model_dir, 'word_dict.pkl')
@@ -165,3 +167,4 @@ if __name__ == '__main__':
     model_path = os.path.join(args.model_dir, 'model.pth')
     with open(model_path, 'wb') as f:
         torch.save(model.cpu().state_dict(), f)
+        
