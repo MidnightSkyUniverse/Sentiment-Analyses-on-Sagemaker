@@ -50,6 +50,7 @@ def input_fn(serialized_input_data, content_type):
     print('Deserializing the input data.')
     if content_type == 'text/plain':
         data = serialized_input_data.decode('utf-8')
+        print("input_fn function: {}".format(data))
         return data
     raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
 
@@ -59,7 +60,7 @@ def output_fn(prediction_output, accept):
 
 def predict_fn(input_data, model):
     print('Inferring sentiment of input data.')
-
+    print("predict_fn: {}".format(input_data))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     if model.word_dict is None:
@@ -71,7 +72,7 @@ def predict_fn(input_data, model):
     #         data_len - The length of the review
     data_X = review_to_words(input_data)
     data_X, data_len = convert_and_pad(model.word_dict, data_X, pad=500)
-      
+    data_X = np.expand_dims(np.array([data_len]+data_X), axis=0)  
 
     # Using data_X and data_len we construct an appropriate input tensor. Remember
     # that our model expects input data of the form 'len, review[500]'.
@@ -80,14 +81,17 @@ def predict_fn(input_data, model):
     
     data = torch.from_numpy(data_pack)
     data = data.to(device)
-
+    
     # Make sure to put the model into evaluation mode
     model.eval()
 
     # TODO: Compute the result of applying the model to the input data. The variable `result` should
     #       be a numpy array which contains a single integer which is either 1 or 0
 
-    out = model(data_X).detach().cpu()
-    result = np.round(out.numpy())
-
+    out = model.forward(data)
+    #result = np.round(out.data.cpu().numpy())
+    result = np.round(out.data.numpy())
+    #result = torch.round(out.squeeze()).long().cpu().numpy()
+    
+    
     return result
